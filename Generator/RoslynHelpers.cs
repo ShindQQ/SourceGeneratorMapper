@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+
 namespace Generator;
 
 public static class RoslynHelpers
@@ -12,19 +13,11 @@ public static class RoslynHelpers
         while (parent != null)
         {
             if (parent is NamespaceDeclarationSyntax namespaceDeclaration)
-            {
                 namespaces.Add(namespaceDeclaration.Name.ToString());
-            }
             else if (parent is FileScopedNamespaceDeclarationSyntax fileScopedNamespaceDeclaration)
-            {
                 namespaces.Add(fileScopedNamespaceDeclaration.Name.ToString());
-            }
-            else if (parent is CompilationUnitSyntax)
-            {
-                break;
-            }
+            else if (parent is CompilationUnitSyntax) break;
 
-            // Move to the parent node
             parent = parent.Parent;
         }
 

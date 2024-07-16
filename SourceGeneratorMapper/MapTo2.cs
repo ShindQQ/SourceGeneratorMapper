@@ -3,7 +3,7 @@
 namespace SourceGeneratorMapper;
 
 [MapTo(typeof(MapFrom))]
-public sealed record MapTo
+public sealed record MapTo2
 {
     public long Id { get; init; }
 

@@ -14,61 +14,58 @@ public class Generator : ISourceGenerator
     public void Execute(GeneratorExecutionContext context)
     {
         var syntaxReceiver = context.SyntaxReceiver as SyntaxReceiver;
-        
-        var namespaces = syntaxReceiver!
-            .ClassMappings.Select(x => x.Namespace)
-            .Distinct()
+
+        var setupMappers = SetupMappers(syntaxReceiver!);
+
+
+        foreach (var setupMapper in setupMappers)
+            context.AddSource($"{setupMapper.ClassName}.g.cs", setupMapper.MapperBody.ToString());
+    }
+
+    private List<MapperCreationResult> SetupMappers(SyntaxReceiver syntaxReceiver)
+    {
+        var mapperInfos = syntaxReceiver.ClassMappings
+            .SelectMany(lookupClass => lookupClass.MapTo,
+                (lookupClass, mapTo) =>
+                    new
+                    {
+                        LookupClass = lookupClass,
+                        MapTo = mapTo
+                    })
+            .GroupBy(x => x.MapTo)
+            .Select(grouping => new MapperInfo
+            {
+                MapTo = grouping.Key,
+                MapToLookUpClass = syntaxReceiver.ClassMappings
+                    .First(x => x.Name.Equals(grouping.Key)),
+                LookupClasses = grouping
+                    .Select(x => x.LookupClass)
+                    .ToList()
+            })
             .ToList();
 
-        var stringBuilder = new StringBuilder();
+        var result = new List<MapperCreationResult>();
 
-        foreach (var @namespace in namespaces)
+        foreach (var mapperInfo in mapperInfos)
         {
-            stringBuilder.Append("using ");
-            stringBuilder.Append(@namespace);
-            stringBuilder.Append(";\n");
-        }
+            var stringBuilder = new StringBuilder();
 
-        stringBuilder.AppendLine();
-        stringBuilder.Append("namespace Generated;");
-        stringBuilder.AppendLine();
+            stringBuilder.AppendUsings(mapperInfo);
+            stringBuilder.AppendNamespace();
 
-        stringBuilder.Append("public static class Mapper \n{\n");
-        for (var i = 0; i < syntaxReceiver!.ClassMappings.Count; i++)
-        {
-            var from = syntaxReceiver.ClassMappings[i];
+            var className = $"{mapperInfo.MapTo}MappingExtension";
 
-            for (var j = 0; j < syntaxReceiver.ClassMappings.Count; j++)
+            stringBuilder.AppendClassName(className);
+
+            stringBuilder.AppendMapperBody(mapperInfo);
+
+            result.Add(new MapperCreationResult
             {
-                if (i == j) continue;
-
-                var to = syntaxReceiver.ClassMappings[j];
-                stringBuilder.AppendLine();
-                stringBuilder.Append("public static ");
-                stringBuilder.Append(to.Name);
-                stringBuilder.Append(" Map(this ");
-                stringBuilder.Append(from.Name);
-                stringBuilder.Append(" from)\n{\n");
-                stringBuilder.Append("return new()\n{\n");
-
-                foreach (var fromProperty in from.Properties)
-                {
-                    var toProperty = to.Properties.FirstOrDefault(x => x == fromProperty);
-                    if (toProperty == null) continue;
-
-                    stringBuilder.Append(toProperty);
-                    stringBuilder.Append("=from.");
-                    stringBuilder.Append(fromProperty);
-                    stringBuilder.Append(",\n");
-                }
-
-                stringBuilder.Append("};\n");
-                stringBuilder.Append("}\n");
-            }
+                ClassName = className,
+                MapperBody = stringBuilder
+            });
         }
 
-        stringBuilder.Append('}');
-
-        context.AddSource("Mapper.g.cs", stringBuilder.ToString());
+        return result;
     }
 }

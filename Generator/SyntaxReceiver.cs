@@ -20,9 +20,17 @@ public class SyntaxReceiver : ISyntaxReceiver
     private void AddMappings(TypeDeclarationSyntax typeDeclarationSyntax)
     {
         var hasMapAttribute = typeDeclarationSyntax.AttributeLists
-            .Any(x => x.Attributes.Any(y => y.Name.ToString() == "Map"));
+            .Any(x => x.Attributes.Any(y => y.Name.ToString() == "MapTo"));
 
         if (!hasMapAttribute) return;
+
+        var mapTo = typeDeclarationSyntax.AttributeLists
+            .SelectMany(x => x.Attributes)
+            .Select(x => x.ArgumentList)
+            .Where(x => x != null)
+            .Select(x => x!.Arguments)
+            .Select(arg => arg.ToString().ExtractTypeName())
+            .ToList();
 
         var properties = typeDeclarationSyntax.Members
             .Select(x => x as PropertyDeclarationSyntax)
@@ -34,7 +42,8 @@ public class SyntaxReceiver : ISyntaxReceiver
         {
             Name = typeDeclarationSyntax.Identifier.Text,
             Namespace = typeDeclarationSyntax.GetNamespace(),
-            Properties = properties
+            Properties = properties,
+            MapTo = mapTo
         });
     }
 }

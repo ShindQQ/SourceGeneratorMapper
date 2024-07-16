@@ -1,6 +1,6 @@
 ﻿namespace SourceGeneratorMapper.Test;
 
-[Map]
+[MapTo(typeof(MapTo))]
 public sealed record MapFrom
 {
     public long Id { get; init; }

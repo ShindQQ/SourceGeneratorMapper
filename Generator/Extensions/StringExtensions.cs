@@ -1,4 +1,4 @@
-﻿namespace Generator;
+﻿namespace Generator.Extensions;
 
 public static class StringExtensions
 {

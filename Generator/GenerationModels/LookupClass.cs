@@ -1,4 +1,4 @@
-﻿namespace Generator;
+﻿namespace Generator.GenerationModels;
 
 public sealed record LookupClass
 {
@@ -6,7 +6,7 @@ public sealed record LookupClass
 
     public string Namespace { get; set; } = string.Empty;
 
-    public List<string> Properties { get; set; } = [];
+    public List<PropertyInfo> Properties { get; set; } = [];
 
     public List<string> MapTo { get; set; } = [];
 }

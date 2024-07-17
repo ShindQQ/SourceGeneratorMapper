@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Generator;
+namespace Generator.Extensions;
 
 public static class RoslynHelpers
 {

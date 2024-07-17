@@ -1,4 +1,6 @@
-﻿namespace Generator;
+﻿using Generator.GenerationModels;
+
+namespace Generator;
 
 public sealed record MapperInfo
 {

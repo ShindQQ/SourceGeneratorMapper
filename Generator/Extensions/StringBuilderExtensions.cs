@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Generator;
+namespace Generator.Extensions;
 
 public static class StringBuilderExtensions
 {
@@ -75,13 +75,13 @@ public static class StringBuilderExtensions
 
             foreach (var fromProperty in from.Properties)
             {
-                var toProperty = to.Properties.FirstOrDefault(x => x == fromProperty);
+                var toProperty = to.Properties.FirstOrDefault(x => x.Name.Equals(fromProperty.Name));
                 if (toProperty == null) continue;
 
                 stringBuilder.AppendTab(3);
-                stringBuilder.Append(toProperty);
+                stringBuilder.Append(toProperty.Name);
                 stringBuilder.Append(" = from.");
-                stringBuilder.Append(fromProperty);
+                stringBuilder.Append(fromProperty.Name);
                 stringBuilder.Append(',');
                 stringBuilder.AppendLine();
             }

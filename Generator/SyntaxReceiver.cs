@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Generator.Extensions;
+using Generator.GenerationModels;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator;
@@ -9,12 +11,15 @@ public class SyntaxReceiver : ISyntaxReceiver
 
     public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
     {
-        if (syntaxNode is not RecordDeclarationSyntax recordDeclarationSyntax) // ||
-            //syntaxNode is not ClassDeclarationSyntax classDeclarationSyntax)
-            return;
-
-        AddMappings(recordDeclarationSyntax);
-        //AddMappings(classDeclarationSyntax);
+        switch (syntaxNode)
+        {
+            case RecordDeclarationSyntax recordDeclarationSyntax:
+                AddMappings(recordDeclarationSyntax);
+                break;
+            case ClassDeclarationSyntax classDeclarationSyntax:
+                AddMappings(classDeclarationSyntax);
+                break;
+        }
     }
 
     private void AddMappings(TypeDeclarationSyntax typeDeclarationSyntax)
@@ -35,9 +40,16 @@ public class SyntaxReceiver : ISyntaxReceiver
         var properties = typeDeclarationSyntax.Members
             .Select(x => x as PropertyDeclarationSyntax)
             .Where(x => x != null)
-            .Select(x => x!.Identifier.Text)
+            .Select(x => new PropertyInfo
+            {
+                Name = x!.Identifier.Text,
+                Type = x!.Type.ToString(),
+                IsCollection = x.Type.IsCollectionType(),
+                IsNullable = x.Type.IsNullableType(),
+                IsReferenceType = x.Type.IsReferenceType()
+            })
             .ToList();
-
+        
         ClassMappings.Add(new LookupClass
         {
             Name = typeDeclarationSyntax.Identifier.Text,

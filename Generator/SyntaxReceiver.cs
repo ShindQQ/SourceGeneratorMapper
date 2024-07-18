@@ -51,7 +51,7 @@ public class SyntaxReceiver : ISyntaxReceiver
                 IsReferenceType = x.Type.IsReferenceType()
             })
             .ToList();
-        
+
         ClassMappings.Add(new LookupClass
         {
             Name = typeDeclarationSyntax.Identifier.Text,

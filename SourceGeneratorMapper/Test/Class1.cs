@@ -14,10 +14,10 @@ public sealed record Class1
     public DateTime? UpdatedAt { get; init; }
 
     public List<Class2> TestCollection1 { get; init; } = new();
-    
+
     public List<Class3> TestCollection2 { get; init; } = new();
-    
+
     public Class3? RefType1 { get; init; }
-    
+
     public Class2 RefType2 { get; init; } = new();
 }

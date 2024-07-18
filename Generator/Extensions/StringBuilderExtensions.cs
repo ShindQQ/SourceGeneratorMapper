@@ -15,10 +15,7 @@ public static class StringBuilderExtensions
 
         namespaces.Add(mapperInfo.MapToLookUpClass.Namespace);
 
-        foreach (var @namespace in namespaces)
-        {
-            stringBuilder.AppendLine($"using {@namespace};");
-        }
+        foreach (var @namespace in namespaces) stringBuilder.AppendLine($"using {@namespace};");
     }
 
     public static void AppendNamespace(this StringBuilder stringBuilder)
@@ -83,13 +80,9 @@ public static class StringBuilderExtensions
             stringBuilder.Append($"{toPropertyInfo.Name} = ");
 
             if (fromPropertyInfo.IsNullable)
-            {
                 AppendNullablePropertyInfoMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
-            }
             else
-            {
                 AppendNonNullablePropertyInfoMapping(stringBuilder, fromPropertyInfo, toPropertyInfo, 4);
-            }
         }
 
         stringBuilder.AppendTab(2);
@@ -110,17 +103,11 @@ public static class StringBuilderExtensions
         stringBuilder.AppendLine($"from.{fromPropertyInfo.Name} != null ?");
 
         if (fromPropertyInfo.IsCollection)
-        {
             AppendCollectionMapping(stringBuilder, fromPropertyInfo, toPropertyInfo, 4);
-        }
         else if (fromPropertyInfo.TrimmedType.Equals(toPropertyInfo.TrimmedType))
-        {
             AppendSimpleMapping(stringBuilder, fromPropertyInfo, 4, true);
-        }
         else
-        {
             AppendComplexMapping(stringBuilder, fromPropertyInfo, toPropertyInfo, 4);
-        }
     }
 
     private static void AppendNonNullablePropertyInfoMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
@@ -176,7 +163,7 @@ public static class StringBuilderExtensions
     }
 
     private static void AppendSimpleMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
-       int tabLevel, bool isNullable)
+        int tabLevel, bool isNullable)
     {
         stringBuilder.AppendTab(tabLevel);
         stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}{(isNullable ? ".Value" : "")} :");

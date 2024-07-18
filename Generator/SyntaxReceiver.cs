@@ -42,8 +42,10 @@ public class SyntaxReceiver : ISyntaxReceiver
             .Where(x => x != null)
             .Select(x => new PropertyInfo
             {
-                Name = x!.Identifier.Text,
-                Type = x!.Type.ToString(),
+                Name = x.Identifier.Text,
+                Type = x.Type.ToString(),
+                CollectionType = x.Type.GetCollectionType(),
+                ItemType = x.Type.GetItemType(),
                 IsCollection = x.Type.IsCollectionType(),
                 IsNullable = x.Type.IsNullableType(),
                 IsReferenceType = x.Type.IsReferenceType()

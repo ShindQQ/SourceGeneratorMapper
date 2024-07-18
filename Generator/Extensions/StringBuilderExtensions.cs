@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Generator.GenerationModels;
 
 namespace Generator.Extensions;
 
@@ -16,31 +17,27 @@ public static class StringBuilderExtensions
 
         foreach (var @namespace in namespaces)
         {
-            stringBuilder.Append("using ");
-            stringBuilder.Append(@namespace);
-            stringBuilder.Append(";\n");
+            stringBuilder.AppendLine($"using {@namespace};");
         }
     }
 
     public static void AppendNamespace(this StringBuilder stringBuilder)
     {
         stringBuilder.AppendLine();
-        stringBuilder.AppendLine("namespace Generated;\n");
+        stringBuilder.AppendLine("namespace Generated;");
+        stringBuilder.AppendLine();
     }
 
     public static void AppendClassName(this StringBuilder stringBuilder,
         string className)
     {
-        stringBuilder.Append("public static class ");
-        stringBuilder.Append(className);
-        stringBuilder.AppendLine();
-        stringBuilder.Append('{');
-        stringBuilder.AppendLine();
+        stringBuilder.AppendLine($"public static class {className}");
+        stringBuilder.AppendLine("{");
     }
 
     public static void AppendTab(this StringBuilder stringBuilder, int count = 1)
     {
-        for (var i = 0; i < count; i++) stringBuilder.Append("\t");
+        stringBuilder.Append(new string('\t', count));
     }
 
     public static void AppendMapperBody(this StringBuilder stringBuilder,
@@ -56,44 +53,156 @@ public static class StringBuilderExtensions
             if (i != 0)
                 stringBuilder.AppendLine();
 
-            stringBuilder.AppendTab();
-            stringBuilder.Append("public static ");
-            stringBuilder.Append(to.Name);
-            stringBuilder.Append(" Map(this ");
-            stringBuilder.Append(from.Name);
-            stringBuilder.Append(" from)");
-            stringBuilder.AppendLine();
-            stringBuilder.AppendTab();
-            stringBuilder.Append('{');
-            stringBuilder.AppendLine();
-            stringBuilder.AppendTab(2);
-            stringBuilder.Append("return new()");
-            stringBuilder.AppendLine();
-            stringBuilder.AppendTab(2);
-            stringBuilder.Append('{');
+            AppendMapOneToOne(stringBuilder, to, from);
+
             stringBuilder.AppendLine();
 
-            foreach (var fromProperty in from.Properties)
-            {
-                var toProperty = to.Properties.FirstOrDefault(x => x.Name.Equals(fromProperty.Name));
-                if (toProperty == null) continue;
-
-                stringBuilder.AppendTab(3);
-                stringBuilder.Append(toProperty.Name);
-                stringBuilder.Append(" = from.");
-                stringBuilder.Append(fromProperty.Name);
-                stringBuilder.Append(',');
-                stringBuilder.AppendLine();
-            }
-
-            stringBuilder.AppendTab(2);
-            stringBuilder.Append("};");
-            stringBuilder.AppendLine();
-            stringBuilder.AppendTab();
-            stringBuilder.Append('}');
-            stringBuilder.AppendLine();
+            AppendMapManyToMany(stringBuilder, to, from);
         }
 
         stringBuilder.Append('}');
+    }
+
+    private static void AppendMapOneToOne(StringBuilder stringBuilder, LookupClass to, LookupClass from)
+    {
+        stringBuilder.AppendTab();
+        stringBuilder.AppendLine($"public static {to.Name} MapTo{to.Name}(this {from.Name} from)");
+        stringBuilder.AppendTab();
+        stringBuilder.AppendLine("{");
+        stringBuilder.AppendTab(2);
+        stringBuilder.AppendLine("return new()");
+        stringBuilder.AppendTab(2);
+        stringBuilder.AppendLine("{");
+
+        foreach (var fromPropertyInfo in from.Properties)
+        {
+            var toPropertyInfo = to.Properties.FirstOrDefault(x => x.Name.Equals(fromPropertyInfo.Name));
+            if (toPropertyInfo == null) continue;
+
+            stringBuilder.AppendTab(3);
+            stringBuilder.Append($"{toPropertyInfo.Name} = ");
+
+            if (fromPropertyInfo.IsNullable)
+            {
+                AppendNullablePropertyInfoMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
+            }
+            else
+            {
+                AppendNonNullablePropertyInfoMapping(stringBuilder, fromPropertyInfo, toPropertyInfo, 4);
+            }
+        }
+
+        stringBuilder.AppendTab(2);
+        stringBuilder.AppendLine("};");
+        stringBuilder.AppendTab();
+        stringBuilder.AppendLine("}");
+    }
+
+    private static void AppendNullablePropertyInfoMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
+        PropertyInfo toPropertyInfo)
+    {
+        if (toPropertyInfo.IsNullable)
+        {
+            stringBuilder.AppendLine($"from.{fromPropertyInfo.Name},");
+            return;
+        }
+
+        stringBuilder.AppendLine($"from.{fromPropertyInfo.Name} != null ?");
+
+        if (fromPropertyInfo.IsCollection)
+        {
+            AppendCollectionMapping(stringBuilder, fromPropertyInfo, toPropertyInfo, 4);
+        }
+        else if (fromPropertyInfo.TrimmedType.Equals(toPropertyInfo.TrimmedType))
+        {
+            AppendSimpleMapping(stringBuilder, fromPropertyInfo, 4, true);
+        }
+        else
+        {
+            AppendComplexMapping(stringBuilder, fromPropertyInfo, toPropertyInfo, 4);
+        }
+    }
+
+    private static void AppendNonNullablePropertyInfoMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
+        PropertyInfo toPropertyInfo, int tabLevel)
+    {
+        if (fromPropertyInfo.IsCollection)
+        {
+            if (fromPropertyInfo.CollectionType.Equals(toPropertyInfo.CollectionType) &&
+                fromPropertyInfo.ItemType.Equals(toPropertyInfo.ItemType))
+            {
+                stringBuilder.AppendLine($"from.{fromPropertyInfo.Name},");
+            }
+            else
+            {
+                stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}");
+                stringBuilder.AppendTab(tabLevel);
+                stringBuilder.AppendLine($".MapTo{toPropertyInfo.ItemType}()");
+                stringBuilder.AppendTab(tabLevel);
+                stringBuilder.AppendLine($".To{toPropertyInfo.CollectionType}(),");
+            }
+        }
+        else if (fromPropertyInfo.TrimmedType.Equals(toPropertyInfo.TrimmedType))
+        {
+            stringBuilder.AppendLine($"from.{fromPropertyInfo.Name},");
+        }
+        else
+        {
+            stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}.MapTo{toPropertyInfo.TrimmedType}(),");
+        }
+    }
+
+    private static void AppendCollectionMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
+        PropertyInfo toPropertyInfo, int tabLevel)
+    {
+        stringBuilder.AppendTab(tabLevel);
+
+        if (fromPropertyInfo.CollectionType.Equals(toPropertyInfo.CollectionType) &&
+            fromPropertyInfo.ItemType.Equals(toPropertyInfo.ItemType))
+        {
+            stringBuilder.AppendLine($"from.{fromPropertyInfo.Name} :");
+        }
+        else
+        {
+            stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}");
+            stringBuilder.AppendTab(tabLevel);
+            stringBuilder.AppendLine($".MapTo{toPropertyInfo.ItemType}()");
+            stringBuilder.AppendTab(tabLevel);
+            stringBuilder.AppendLine($".To{toPropertyInfo.CollectionType}() :");
+        }
+
+        stringBuilder.AppendTab(tabLevel);
+        stringBuilder.AppendLine("new(),");
+    }
+
+    private static void AppendSimpleMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
+       int tabLevel, bool isNullable)
+    {
+        stringBuilder.AppendTab(tabLevel);
+        stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}{(isNullable ? ".Value" : "")} :");
+        stringBuilder.AppendTab(tabLevel);
+        stringBuilder.AppendLine("default,");
+    }
+
+    private static void AppendComplexMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
+        PropertyInfo toPropertyInfo, int tabLevel)
+    {
+        stringBuilder.AppendTab(tabLevel);
+        stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}.MapTo{toPropertyInfo.ItemType}() :");
+        stringBuilder.AppendTab(tabLevel);
+        stringBuilder.AppendLine("null,");
+    }
+
+    private static void AppendMapManyToMany(StringBuilder stringBuilder, LookupClass to, LookupClass from)
+    {
+        stringBuilder.AppendTab();
+        stringBuilder.AppendLine(
+            $"public static IEnumerable<{to.Name}> MapTo{to.Name}(this IEnumerable<{from.Name}> from)");
+        stringBuilder.AppendTab();
+        stringBuilder.AppendLine("{");
+        stringBuilder.AppendTab(2);
+        stringBuilder.AppendLine($"return from.Select(x => x.MapTo{to.Name}());");
+        stringBuilder.AppendTab();
+        stringBuilder.AppendLine("}");
     }
 }

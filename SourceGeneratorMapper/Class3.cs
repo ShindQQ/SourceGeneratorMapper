@@ -2,8 +2,8 @@
 
 namespace SourceGeneratorMapper;
 
-[MapTo(typeof(MapFrom))]
-public sealed class MapTo2
+[MapTo(typeof(Class1))]
+public sealed class Class3
 {
     public long Id { get; init; }
 

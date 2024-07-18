@@ -20,4 +20,33 @@ public static class TypeSyntaxExtensions
         var typeName = type.ToString();
         return char.IsUpper(typeName[0]);
     }
+    
+    private static string GetBaseTypeName(this TypeSyntax type)
+    {
+        var typeName = type.ToString().TrimEnd('?');
+        if (!typeName.Contains('<')) 
+            return typeName;
+        
+        var genericPartIndex = typeName.IndexOf('<');
+        return typeName.Substring(0, genericPartIndex);
+    } 
+    
+    public static string GetCollectionType(this TypeSyntax type)
+    {
+        var typeName = type.GetBaseTypeName();
+        return typeName is "IEnumerable" or "List" or "Collection" ? 
+            typeName : 
+            string.Empty;
+    }
+
+    public static string GetItemType(this TypeSyntax type)
+    {
+        if (type is NullableTypeSyntax nullableType)
+            type = nullableType.ElementType;
+        
+        if (type is GenericNameSyntax { TypeArgumentList.Arguments.Count: 1 } genericName)
+            return genericName.TypeArgumentList.Arguments[0].ToString();
+        
+        return string.Empty;
+    }
 }

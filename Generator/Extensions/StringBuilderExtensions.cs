@@ -75,8 +75,8 @@ public static class StringBuilderExtensions
         {
             var toPropertyInfo = to.Properties
                 .FirstOrDefault(x => x.Name.Equals(fromPropertyInfo.Name) ||
-                            fromPropertyInfo.Associations.Contains(x.Name));
-            
+                                     fromPropertyInfo.Associations.Contains(x.Name));
+
             if (toPropertyInfo == null) continue;
 
             stringBuilder.AppendTab(3);

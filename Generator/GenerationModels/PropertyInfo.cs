@@ -3,7 +3,7 @@
 public sealed record PropertyInfo
 {
     public string Name { get; set; } = string.Empty;
-    
+
     public List<string> Associations { get; set; } = new();
 
     public string Type { get; set; } = string.Empty;

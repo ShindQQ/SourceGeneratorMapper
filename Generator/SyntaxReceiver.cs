@@ -46,7 +46,8 @@ public class SyntaxReceiver : ISyntaxReceiver
                 Associations = x.AttributeLists
                     .SelectMany(attributeListSyntax => attributeListSyntax.Attributes)
                     .Where(attributeSyntax => attributeSyntax.Name.ToString().Equals("MapToProperty"))
-                    .SelectMany(attributeSyntax => attributeSyntax.ArgumentList?.Arguments ?? Enumerable.Empty<AttributeArgumentSyntax>())
+                    .SelectMany(attributeSyntax =>
+                        attributeSyntax.ArgumentList?.Arguments ?? Enumerable.Empty<AttributeArgumentSyntax>())
                     .Select(argument => argument.Expression)
                     .OfType<LiteralExpressionSyntax>()
                     .Select(literalExpression => literalExpression.Token.ValueText)

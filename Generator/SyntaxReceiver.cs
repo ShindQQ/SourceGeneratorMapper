@@ -25,7 +25,7 @@ public class SyntaxReceiver : ISyntaxReceiver
     private void AddMappings(TypeDeclarationSyntax typeDeclarationSyntax)
     {
         var hasMapAttribute = typeDeclarationSyntax.AttributeLists
-            .Any(x => x.Attributes.Any(y => y.Name.ToString() == "MapTo"));
+            .Any(x => x.Attributes.Any(y => y.Name.ToString().Equals("MapTo")));
 
         if (!hasMapAttribute) return;
 
@@ -42,7 +42,15 @@ public class SyntaxReceiver : ISyntaxReceiver
             .Where(x => x != null)
             .Select(x => new PropertyInfo
             {
-                Name = x.Identifier.Text,
+                Name = x!.Identifier.Text,
+                Associations = x.AttributeLists
+                    .SelectMany(attributeListSyntax => attributeListSyntax.Attributes)
+                    .Where(attributeSyntax => attributeSyntax.Name.ToString().Equals("MapToProperty"))
+                    .SelectMany(attributeSyntax => attributeSyntax.ArgumentList?.Arguments ?? Enumerable.Empty<AttributeArgumentSyntax>())
+                    .Select(argument => argument.Expression)
+                    .OfType<LiteralExpressionSyntax>()
+                    .Select(literalExpression => literalExpression.Token.ValueText)
+                    .ToList(),
                 Type = x.Type.ToString(),
                 CollectionType = x.Type.GetCollectionType(),
                 ItemType = x.Type.GetItemType(),

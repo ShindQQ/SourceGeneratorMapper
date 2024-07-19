@@ -34,7 +34,7 @@ public static class TypeSyntaxExtensions
     public static string GetCollectionType(this TypeSyntax type)
     {
         var typeName = type.GetBaseTypeName();
-        return typeName is "IEnumerable" or "List" or "Collection" ? typeName : string.Empty;
+        return type.IsCollectionType() ? typeName : string.Empty;
     }
 
     public static string GetItemType(this TypeSyntax type)

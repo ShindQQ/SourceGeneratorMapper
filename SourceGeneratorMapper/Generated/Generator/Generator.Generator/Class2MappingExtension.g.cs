@@ -12,7 +12,7 @@ public static class Class2MappingExtension
 			Id = from.Id,
 			Name = from.Name,
 			Description = from.Description,
-			CreatedAt = from.CreatedAt,
+			CreatedAt1 = from.CreatedAt,
 			UpdatedAt = from.UpdatedAt,
 			TestCollection1 = from.TestCollection1
 				.MapToClass1()

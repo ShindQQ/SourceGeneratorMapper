@@ -12,8 +12,8 @@ public static class Class1MappingExtension
 			Id = from.Id,
 			Name = from.Name,
 			Description = from.Description,
-			CreatedAt = from.CreatedAt != null ?
-				from.CreatedAt.Value :
+			CreatedAt = from.CreatedAt1 != null ?
+				from.CreatedAt1.Value :
 				default,
 			UpdatedAt = from.UpdatedAt,
 			TestCollection1 = from.TestCollection1 != null ?

@@ -15,7 +15,8 @@ public sealed record Class2
 
     public string? Description { get; init; }
 
-    public DateTime? CreatedAt { get; init; }
+    [MapToProperty("CreatedAt")]
+    public DateTime? CreatedAt1 { get; init; }
 
     public DateTime? UpdatedAt { get; init; }
 

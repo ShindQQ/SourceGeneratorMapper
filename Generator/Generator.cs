@@ -22,7 +22,7 @@ public class Generator : ISourceGenerator
             context.AddSource($"{setupMapper.ClassName}.g.cs", setupMapper.MapperBody.ToString());
     }
 
-    private List<MapperCreationResult> SetupMappers(SyntaxReceiver syntaxReceiver)
+    private static List<MapperCreationResult> SetupMappers(SyntaxReceiver syntaxReceiver)
     {
         var mapperInfos = syntaxReceiver.ClassMappings
             .SelectMany(lookupClass => lookupClass.MapTo,

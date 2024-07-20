@@ -11,11 +11,11 @@ public static class StringBuilderExtensions
         var namespaces = mapperInfo.LookupClasses
             .Select(x => x.Namespace)
             .Distinct()
+            .Concat(new[] { mapperInfo.MapToLookUpClass.Namespace })
             .ToList();
 
-        namespaces.Add(mapperInfo.MapToLookUpClass.Namespace);
-
-        foreach (var @namespace in namespaces) stringBuilder.AppendLine($"using {@namespace};");
+        foreach (var @namespace in namespaces)
+            stringBuilder.AppendLine($"using {@namespace};");
     }
 
     public static void AppendNamespace(this StringBuilder stringBuilder)
@@ -85,7 +85,7 @@ public static class StringBuilderExtensions
             if (fromPropertyInfo.IsNullable)
                 AppendNullablePropertyInfoMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
             else
-                AppendNonNullablePropertyInfoMapping(stringBuilder, fromPropertyInfo, toPropertyInfo, 4);
+                AppendNonNullablePropertyInfoMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
         }
 
         stringBuilder.AppendTab(2);
@@ -106,15 +106,15 @@ public static class StringBuilderExtensions
         stringBuilder.AppendLine($"from.{fromPropertyInfo.Name} != null ?");
 
         if (fromPropertyInfo.IsCollection)
-            AppendCollectionMapping(stringBuilder, fromPropertyInfo, toPropertyInfo, 4);
+            AppendCollectionMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
         else if (fromPropertyInfo.TrimmedType.Equals(toPropertyInfo.TrimmedType))
-            AppendSimpleMapping(stringBuilder, fromPropertyInfo, 4, true);
+            AppendSimpleMapping(stringBuilder, fromPropertyInfo, true);
         else
-            AppendComplexMapping(stringBuilder, fromPropertyInfo, toPropertyInfo, 4);
+            AppendComplexMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
     }
 
     private static void AppendNonNullablePropertyInfoMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
-        PropertyInfo toPropertyInfo, int tabLevel)
+        PropertyInfo toPropertyInfo, int tabLevel = 4)
     {
         if (fromPropertyInfo.IsCollection)
         {
@@ -143,7 +143,7 @@ public static class StringBuilderExtensions
     }
 
     private static void AppendCollectionMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
-        PropertyInfo toPropertyInfo, int tabLevel)
+        PropertyInfo toPropertyInfo, int tabLevel = 4)
     {
         stringBuilder.AppendTab(tabLevel);
 
@@ -165,8 +165,8 @@ public static class StringBuilderExtensions
         stringBuilder.AppendLine("new(),");
     }
 
-    private static void AppendSimpleMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
-        int tabLevel, bool isNullable)
+    private static void AppendSimpleMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo, 
+        bool isNullable, int tabLevel = 4)
     {
         stringBuilder.AppendTab(tabLevel);
         stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}{(isNullable ? ".Value" : "")} :");
@@ -175,7 +175,7 @@ public static class StringBuilderExtensions
     }
 
     private static void AppendComplexMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
-        PropertyInfo toPropertyInfo, int tabLevel)
+        PropertyInfo toPropertyInfo, int tabLevel = 4)
     {
         stringBuilder.AppendTab(tabLevel);
         stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}.MapTo{toPropertyInfo.ItemType}() :");

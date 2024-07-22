@@ -10,6 +10,11 @@ public static class Class1MappingExtension
 		return new()
 		{
 			Id = from.Id,
+			Id1 = from.Id1.ToString(),
+			Id1Nullable = from.Id1Nullable.ToString(),
+			Id1NonNullable = from.IdNullable != null ?
+				from.IdNullable.ToString() :
+				default,
 			Name = from.Name,
 			Description = from.Description,
 			CreatedAt = from.CreatedAt1 != null ?

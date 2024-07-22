@@ -5,6 +5,48 @@ namespace Generator.Extensions;
 
 public static class StringBuilderExtensions
 {
+    private static readonly Dictionary<(string fromType, string toType), Func<string, string>> TypeConversions =
+        new()
+        {
+            {
+                ("string", "int"),
+                from => $"int.TryParse(from.{from}, out var _{from}) ?\n\t\t\t\t _{from} :\n\t\t\t\t default"
+            },
+            { ("int", "string"), from => $"from.{from}.ToString()" },
+            {
+                ("string", "long"),
+                from => $"long.TryParse(from.{from}, out var _{from}) ?\n\t\t\t\t _{from} :\n\t\t\t\t default"
+            },
+            { ("long", "string"), from => $"from.{from}.ToString()" },
+            {
+                ("string", "float"),
+                from => $"float.TryParse(from.{from}, out var _{from}) ?\n\t\t\t\t _{from} :\n\t\t\t\t default"
+            },
+            { ("float", "string"), from => $"from.{from}.ToString()" },
+            {
+                ("string", "double"),
+                from => $"double.TryParse(from.{from}, out var _{from}) ?\n\t\t\t\t _{from} :\n\t\t\t\t default"
+            },
+            { ("double", "string"), from => $"from.{from}.ToString()" },
+            {
+                ("string", "decimal"),
+                from => $"decimal.TryParse(from.{from}, out var _{from}) ?\n\t\t\t\t _{from} :\n\t\t\t\t default"
+            },
+            { ("decimal", "string"), from => $"from.{from}.ToString()" },
+            {
+                ("string", "bool"),
+                from => $"bool.TryParse(from.{from}, out var _{from}) ?\n\t\t\t\t _{from} :\n\t\t\t\t default"
+            },
+            { ("bool", "string"), from => $"from.{from}.ToString()" },
+            {
+                ("string", "DateTime"),
+                from => $"DateTime.TryParse(from.{from}, out var _{from}) ?\n\t\t\t\t _{from} :\n\t\t\t\t default"
+            },
+            { ("DateTime", "string"), from => $"from.{from}.ToString(\"o\")" },
+            { ("DateTime", "long"), from => $"from.{from}.Ticks" },
+            { ("long", "DateTime"), from => $"new DateTime(from.{from})" }
+        };
+
     public static void AppendUsings(this StringBuilder stringBuilder,
         MapperInfo mapperInfo)
     {
@@ -50,17 +92,17 @@ public static class StringBuilderExtensions
             if (i != 0)
                 stringBuilder.AppendLine();
 
-            AppendMapOneToOne(stringBuilder, to, from);
+            stringBuilder.AppendMapOneToOne(to, from);
 
             stringBuilder.AppendLine();
 
-            AppendMapManyToMany(stringBuilder, to, from);
+            stringBuilder.AppendMapManyToMany(to, from);
         }
 
         stringBuilder.Append('}');
     }
 
-    private static void AppendMapOneToOne(StringBuilder stringBuilder, LookupClass to, LookupClass from)
+    private static void AppendMapOneToOne(this StringBuilder stringBuilder, LookupClass to, LookupClass from)
     {
         stringBuilder.AppendTab();
         stringBuilder.AppendLine($"public static {to.Name} MapTo{to.Name}(this {from.Name} from)");
@@ -83,9 +125,9 @@ public static class StringBuilderExtensions
             stringBuilder.Append($"{toPropertyInfo.Name} = ");
 
             if (fromPropertyInfo.IsNullable)
-                AppendNullablePropertyInfoMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
+                stringBuilder.AppendNullablePropertyInfoMapping(fromPropertyInfo, toPropertyInfo);
             else
-                AppendNonNullablePropertyInfoMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
+                stringBuilder.AppendNonNullablePropertyInfoMapping(fromPropertyInfo, toPropertyInfo);
         }
 
         stringBuilder.AppendTab(2);
@@ -94,26 +136,47 @@ public static class StringBuilderExtensions
         stringBuilder.AppendLine("}");
     }
 
-    private static void AppendNullablePropertyInfoMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
+    private static void AppendNullablePropertyInfoMapping(this StringBuilder stringBuilder,
+        PropertyInfo fromPropertyInfo,
         PropertyInfo toPropertyInfo)
     {
         if (toPropertyInfo.IsNullable)
         {
-            stringBuilder.AppendLine($"from.{fromPropertyInfo.Name},");
+            if (TypeConversions.TryGetValue((fromPropertyInfo.TrimmedType, toPropertyInfo.TrimmedType),
+                    out var conversion))
+                stringBuilder.AppendLine($"{conversion($"{fromPropertyInfo.Name}")},");
+            else
+                stringBuilder.AppendLine($"from.{fromPropertyInfo.Name},");
+
             return;
         }
 
         stringBuilder.AppendLine($"from.{fromPropertyInfo.Name} != null ?");
 
         if (fromPropertyInfo.IsCollection)
-            AppendCollectionMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
+        {
+            stringBuilder.AppendCollectionMapping(fromPropertyInfo, toPropertyInfo);
+        }
         else if (fromPropertyInfo.TrimmedType.Equals(toPropertyInfo.TrimmedType))
-            AppendSimpleMapping(stringBuilder, fromPropertyInfo, true);
+        {
+            stringBuilder.AppendSimpleMapping(fromPropertyInfo, true);
+        }
+        else if (TypeConversions.TryGetValue((fromPropertyInfo.TrimmedType, toPropertyInfo.TrimmedType),
+                     out var conversion))
+        {
+            stringBuilder.AppendTab(4);
+            stringBuilder.AppendLine($"{conversion($"{fromPropertyInfo.Name}")} :");
+            stringBuilder.AppendTab(4);
+            stringBuilder.AppendLine("default,");
+        }
         else
-            AppendComplexMapping(stringBuilder, fromPropertyInfo, toPropertyInfo);
+        {
+            stringBuilder.AppendComplexMapping(fromPropertyInfo, toPropertyInfo);
+        }
     }
 
-    private static void AppendNonNullablePropertyInfoMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
+    private static void AppendNonNullablePropertyInfoMapping(this StringBuilder stringBuilder,
+        PropertyInfo fromPropertyInfo,
         PropertyInfo toPropertyInfo, int tabLevel = 4)
     {
         if (fromPropertyInfo.IsCollection)
@@ -136,13 +199,18 @@ public static class StringBuilderExtensions
         {
             stringBuilder.AppendLine($"from.{fromPropertyInfo.Name},");
         }
+        else if (TypeConversions.TryGetValue((fromPropertyInfo.TrimmedType, toPropertyInfo.TrimmedType),
+                     out var conversion))
+        {
+            stringBuilder.AppendLine($"{conversion($"{fromPropertyInfo.Name}")},");
+        }
         else
         {
             stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}.MapTo{toPropertyInfo.TrimmedType}(),");
         }
     }
 
-    private static void AppendCollectionMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
+    private static void AppendCollectionMapping(this StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
         PropertyInfo toPropertyInfo, int tabLevel = 4)
     {
         stringBuilder.AppendTab(tabLevel);
@@ -165,7 +233,7 @@ public static class StringBuilderExtensions
         stringBuilder.AppendLine("new(),");
     }
 
-    private static void AppendSimpleMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo, 
+    private static void AppendSimpleMapping(this StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
         bool isNullable, int tabLevel = 4)
     {
         stringBuilder.AppendTab(tabLevel);
@@ -174,7 +242,7 @@ public static class StringBuilderExtensions
         stringBuilder.AppendLine("default,");
     }
 
-    private static void AppendComplexMapping(StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
+    private static void AppendComplexMapping(this StringBuilder stringBuilder, PropertyInfo fromPropertyInfo,
         PropertyInfo toPropertyInfo, int tabLevel = 4)
     {
         stringBuilder.AppendTab(tabLevel);
@@ -183,7 +251,7 @@ public static class StringBuilderExtensions
         stringBuilder.AppendLine("null,");
     }
 
-    private static void AppendMapManyToMany(StringBuilder stringBuilder, LookupClass to, LookupClass from)
+    private static void AppendMapManyToMany(this StringBuilder stringBuilder, LookupClass to, LookupClass from)
     {
         stringBuilder.AppendTab();
         stringBuilder.AppendLine(

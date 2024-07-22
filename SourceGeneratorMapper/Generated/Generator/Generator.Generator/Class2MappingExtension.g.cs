@@ -10,6 +10,12 @@ public static class Class2MappingExtension
 		return new()
 		{
 			Id = from.Id,
+			Id1 = long.TryParse(from.Id1, out var _Id1) ?
+				 _Id1 :
+				 default,
+			Id1Nullable = long.TryParse(from.Id1Nullable, out var _Id1Nullable) ?
+				 _Id1Nullable :
+				 default,
 			Name = from.Name,
 			Description = from.Description,
 			CreatedAt1 = from.CreatedAt,

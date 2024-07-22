@@ -5,6 +5,12 @@ public sealed record Class1
 {
     public long Id { get; init; }
 
+    public string Id1 { get; init; }
+
+    public string? Id1Nullable { get; init; }
+
+    public string Id1NonNullable { get; init; }
+
     public string Name { get; init; }
 
     public string? Description { get; init; }

@@ -6,8 +6,11 @@ namespace SourceGeneratorMapper;
 public sealed record Class2
 {
     public long Id { get; init; }
+    public long Id1 { get; init; }
 
-    public long? IdNullable { get; init; }
+    public long? Id1Nullable { get; init; }
+
+    [MapToProperty("Id1NonNullable")] public long? IdNullable { get; init; }
 
     public bool Bool { get; init; }
 

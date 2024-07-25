@@ -18,7 +18,6 @@ public class Generator : ISourceGenerator
 
         var setupMappers = SetupMappers(syntaxReceiver!);
 
-        Console.WriteLine();
         foreach (var setupMapper in setupMappers)
             context.AddSource($"{setupMapper.ClassName}.g.cs", setupMapper.MapperBody.ToString());
     }

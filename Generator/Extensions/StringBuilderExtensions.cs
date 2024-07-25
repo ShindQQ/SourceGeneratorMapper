@@ -119,7 +119,7 @@ public static class StringBuilderExtensions
                 .FirstOrDefault(x => x.Name.Equals(fromPropertyInfo.Name) ||
                                      fromPropertyInfo.Associations.Contains(x.Name));
 
-            if (toPropertyInfo == null) continue;
+            if (toPropertyInfo == null || toPropertyInfo.IsMapped) continue;
 
             stringBuilder.AppendTab(3);
             stringBuilder.Append($"{toPropertyInfo.Name} = ");
@@ -128,6 +128,8 @@ public static class StringBuilderExtensions
                 stringBuilder.AppendNullablePropertyInfoMapping(fromPropertyInfo, toPropertyInfo);
             else
                 stringBuilder.AppendNonNullablePropertyInfoMapping(fromPropertyInfo, toPropertyInfo);
+
+            toPropertyInfo.IsMapped = true;
         }
 
         stringBuilder.AppendTab(2);

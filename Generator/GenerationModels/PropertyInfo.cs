@@ -19,4 +19,6 @@ public sealed record PropertyInfo
     public bool IsNullable { get; set; }
 
     public bool IsReferenceType { get; set; }
+
+    public bool IsMapped { get; set; }
 }

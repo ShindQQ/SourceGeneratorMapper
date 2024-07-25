@@ -41,11 +41,6 @@ public static class Class1MappingExtension
 	{
 		return new()
 		{
-			Id = from.Id,
-			Name = from.Name,
-			Description = from.Description,
-			CreatedAt = from.CreatedAt,
-			UpdatedAt = from.UpdatedAt,
 		};
 	}
 

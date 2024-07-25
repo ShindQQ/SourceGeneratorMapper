@@ -23,6 +23,7 @@ To map one type to another, use the `MapTo` attribute and provide the target typ
 [MapTo(typeof(TargetType))]
 public class SourceType
 {
+    public string TargetPropertyName { get; set; }
     // Properties
 }
 ```
@@ -35,6 +36,7 @@ public class SourceType
 {
     [MapToProperty("TargetPropertyName")]
     public string SourcePropertyName { get; set; }
+    // Properties
 }
 ```
 
@@ -60,7 +62,9 @@ public class SourceType
 public class TargetType
 {
     public int Id { get; set; }
+
     public string FullName { get; set; }
+
     public DateTime DateOfBirth { get; set; }
 }
 ```
@@ -70,13 +74,13 @@ public class TargetType
 ```csharp
 public static class SourceTypeMappingExtension
 {
-    public static TargetType MapToTargetType(this SourceType source)
+    public static TargetType MapToTargetType(this SourceType from)
     {
         return new TargetType
         {
-            Id = source.Id,
-            FullName = source.Name,
-            DateOfBirth = source.DateOfBirth
+            Id = from.Id,
+            FullName = from.Name,
+            DateOfBirth = from.DateOfBirth
         };
     }
 }

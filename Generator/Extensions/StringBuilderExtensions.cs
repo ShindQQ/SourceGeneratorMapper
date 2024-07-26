@@ -184,7 +184,7 @@ public static class StringBuilderExtensions
         if (fromPropertyInfo.IsCollection)
         {
             if (fromPropertyInfo.CollectionType.Equals(toPropertyInfo.CollectionType) &&
-                fromPropertyInfo.ItemType.Equals(toPropertyInfo.ItemType))
+                fromPropertyInfo.CollectionItemType.Equals(toPropertyInfo.CollectionItemType))
             {
                 stringBuilder.AppendLine($"from.{fromPropertyInfo.Name},");
             }
@@ -192,7 +192,7 @@ public static class StringBuilderExtensions
             {
                 stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}");
                 stringBuilder.AppendTab(tabLevel);
-                stringBuilder.AppendLine($".MapTo{toPropertyInfo.ItemType}()");
+                stringBuilder.AppendLine($".MapTo{toPropertyInfo.CollectionItemType}()");
                 stringBuilder.AppendTab(tabLevel);
                 stringBuilder.AppendLine($".To{toPropertyInfo.CollectionType}(),");
             }
@@ -218,7 +218,7 @@ public static class StringBuilderExtensions
         stringBuilder.AppendTab(tabLevel);
 
         if (fromPropertyInfo.CollectionType.Equals(toPropertyInfo.CollectionType) &&
-            fromPropertyInfo.ItemType.Equals(toPropertyInfo.ItemType))
+            fromPropertyInfo.CollectionItemType.Equals(toPropertyInfo.CollectionItemType))
         {
             stringBuilder.AppendLine($"from.{fromPropertyInfo.Name} :");
         }
@@ -226,7 +226,7 @@ public static class StringBuilderExtensions
         {
             stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}");
             stringBuilder.AppendTab(tabLevel);
-            stringBuilder.AppendLine($".MapTo{toPropertyInfo.ItemType}()");
+            stringBuilder.AppendLine($".MapTo{toPropertyInfo.CollectionItemType}()");
             stringBuilder.AppendTab(tabLevel);
             stringBuilder.AppendLine($".To{toPropertyInfo.CollectionType}() :");
         }
@@ -248,7 +248,7 @@ public static class StringBuilderExtensions
         PropertyInfo toPropertyInfo, int tabLevel = 4)
     {
         stringBuilder.AppendTab(tabLevel);
-        stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}.MapTo{toPropertyInfo.ItemType}() :");
+        stringBuilder.AppendLine($"from.{fromPropertyInfo.Name}.MapTo{toPropertyInfo.CollectionItemType}() :");
         stringBuilder.AppendTab(tabLevel);
         stringBuilder.AppendLine("null,");
     }

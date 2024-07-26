@@ -3,6 +3,7 @@
 namespace SourceGeneratorMapper;
 
 [MapTo(typeof(Class1))]
+[MapTo(typeof(Class3))]
 public sealed record Class2
 {
     public long Id { get; init; }
@@ -27,6 +28,8 @@ public sealed record Class2
     public List<Class3> TestCollection2 { get; init; } = new();
 
     public List<Class3> TestCollection3 { get; init; } = null;
+
+    public Class3[] TestCollection4 { get; init; } = null;
 
     public Class3? RefType1 { get; init; }
 

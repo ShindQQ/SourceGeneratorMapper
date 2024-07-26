@@ -1,5 +1,6 @@
 ﻿namespace SourceGeneratorMapper;
 
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public sealed class MapToAttribute : Attribute
 {
     public MapToAttribute(params Type[] types)

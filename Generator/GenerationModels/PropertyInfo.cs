@@ -12,7 +12,7 @@ public sealed record PropertyInfo
 
     public string CollectionType { get; set; } = string.Empty;
 
-    public string ItemType { get; set; } = string.Empty;
+    public string CollectionItemType { get; set; } = string.Empty;
 
     public bool IsCollection { get; set; }
 

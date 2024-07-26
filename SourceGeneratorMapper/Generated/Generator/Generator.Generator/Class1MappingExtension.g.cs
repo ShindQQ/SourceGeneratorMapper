@@ -13,7 +13,7 @@ public static class Class1MappingExtension
 			Id1 = from.Id1.ToString(),
 			Id1Nullable = from.Id1Nullable.ToString(),
 			Id1NonNullable = from.IdNullable != null ?
-				from.IdNullable.ToString() :
+				Convert.ToString(from.IdNullable) :
 				default,
 			Name = from.Name,
 			Description = from.Description,
@@ -26,7 +26,12 @@ public static class Class1MappingExtension
 				.MapToClass2()
 				.ToList() :
 				new(),
-			TestCollection2 = from.TestCollection2,
+			TestCollection2 = from.TestCollection2
+				.MapToClass2()
+				.ToList(),
+			TestCollection4 = from.TestCollection4
+				.MapToClass2()
+				.ToArray(),
 			RefType1 = from.RefType1,
 			RefType2 = from.RefType2.MapToClass2(),
 		};

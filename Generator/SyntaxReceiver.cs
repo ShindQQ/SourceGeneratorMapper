@@ -54,7 +54,7 @@ public class SyntaxReceiver : ISyntaxReceiver
                     .ToList(),
                 Type = x.Type.ToString(),
                 CollectionType = x.Type.GetCollectionType(),
-                ItemType = x.Type.GetItemType(),
+                CollectionItemType = x.Type.GetCollectionItemType(),
                 IsCollection = x.Type.IsCollectionType(),
                 IsNullable = x.Type.IsNullableType(),
                 IsReferenceType = x.Type.IsReferenceType()

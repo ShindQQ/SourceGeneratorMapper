@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Immutable;
+using System.Text;
 using Generator.GenerationModels;
 using Generator.MapperModels;
 
@@ -61,10 +62,20 @@ public static class StringBuilderExtensions
             stringBuilder.AppendLine($"using {@namespace};");
     }
 
-    public static void AppendNamespace(this StringBuilder stringBuilder)
+    public static void AppendNamespace(this StringBuilder stringBuilder, string outputDirectory)
     {
         stringBuilder.AppendLine();
-        stringBuilder.AppendLine("namespace Generated;");
+        
+        if (string.IsNullOrEmpty(outputDirectory))
+        {
+            stringBuilder.AppendLine("namespace Generated;");
+        }
+        else
+        {
+            var @namespace = string.Join(".", outputDirectory.Split('\\').AsEnumerable());
+            stringBuilder.AppendLine($"namespace {@namespace};");
+        }
+        
         stringBuilder.AppendLine();
     }
 

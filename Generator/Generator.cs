@@ -20,11 +20,17 @@ public class Generator : ISourceGenerator
         var setupMappers = SetupMappers(syntaxReceiver!);
 
         foreach (var setupMapper in setupMappers)
+        {
+
 #pragma warning disable RS1035
+            Directory.CreateDirectory(setupMapper.OutputDirectory);
+            var file = new FileInfo(setupMapper.OutputDirectory);
+            file.Directory?.Create();
             File.WriteAllText($@"{setupMapper.OutputDirectory}\{setupMapper.ClassName}.cs",
                 setupMapper.MapperBody.ToString(),
                 Encoding.UTF8);
 #pragma warning restore RS1035
+        }
     }
 
     private static List<MapperCreationResult> SetupMappers(SyntaxReceiver syntaxReceiver)
@@ -56,7 +62,7 @@ public class Generator : ISourceGenerator
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendUsings(mapperInfo);
-            stringBuilder.AppendNamespace();
+            stringBuilder.AppendNamespace(mapperInfo.MapToLookUpClass.OutputDirectory);
 
             stringBuilder.AppendClassName(mapperInfo.GeneratedClassName);
 

@@ -39,6 +39,17 @@ public class SourceType
     // Properties
 }
 ```
+### Specifying Output Directory
+To specify directory where mapping will be generated, use the `OutputDirectory` attribute and provide the target directory name you want to generate to.
+
+```csharp
+[OutputDirectory("Generated")]
+public class SourceType
+{
+    public string SourcePropertyName { get; set; }
+    // Properties
+}
+```
 
 ## Example
 ### Source Type

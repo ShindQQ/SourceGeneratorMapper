@@ -29,7 +29,7 @@ public class SourceType
 ```
 ### Mapping Properties
 
-To map specific properties, use the MapToProperty attribute and provide the target property name you want to map to.
+To map specific properties, use the `MapToProperty` attribute and provide the target property name you want to map to.
 
 ```csharp
 public class SourceType

@@ -1,5 +1,6 @@
 ﻿using Generator.Extensions;
 using Generator.GenerationModels;
+using Generator.StaticModels;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -25,12 +26,13 @@ public class SyntaxReceiver : ISyntaxReceiver
     private void AddMappings(TypeDeclarationSyntax typeDeclarationSyntax)
     {
         var hasMapAttribute = typeDeclarationSyntax.AttributeLists
-            .Any(x => x.Attributes.Any(y => y.Name.ToString().Equals("MapTo")));
+            .Any(x => x.Attributes.Any(y => y.Name.ToString().Equals(MappingAttribute.MapTo)));
 
         if (!hasMapAttribute) return;
 
         var mapTo = typeDeclarationSyntax.AttributeLists
             .SelectMany(x => x.Attributes)
+            .Where(attributeSyntax => attributeSyntax.Name.ToString().Equals(MappingAttribute.MapTo))
             .Select(x => x.ArgumentList)
             .Where(x => x != null)
             .Select(x => x!.Arguments)
@@ -45,7 +47,7 @@ public class SyntaxReceiver : ISyntaxReceiver
                 Name = x!.Identifier.Text,
                 Associations = x.AttributeLists
                     .SelectMany(attributeListSyntax => attributeListSyntax.Attributes)
-                    .Where(attributeSyntax => attributeSyntax.Name.ToString().Equals("MapToProperty"))
+                    .Where(attributeSyntax => attributeSyntax.Name.ToString().Equals(MappingAttribute.MapToProperty))
                     .SelectMany(attributeSyntax =>
                         attributeSyntax.ArgumentList?.Arguments ?? Enumerable.Empty<AttributeArgumentSyntax>())
                     .Select(argument => argument.Expression)
@@ -64,6 +66,15 @@ public class SyntaxReceiver : ISyntaxReceiver
         ClassMappings.Add(new LookupClass
         {
             Name = typeDeclarationSyntax.Identifier.Text,
+            OutputDirectory = typeDeclarationSyntax
+                .AttributeLists
+                .SelectMany(x => x.Attributes)
+                .Where(y => y.Name.ToString().Equals(MappingAttribute.OutputDirectory))
+                .Select(x => x.ArgumentList)
+                .Where(x => x != null)
+                .Select(x => x!.Arguments)
+                .Select(arg => arg.ToString().ExtractDirectory())
+                .FirstOrDefault() ?? string.Empty,
             Namespace = typeDeclarationSyntax.GetNamespace(),
             Properties = properties,
             MapTo = mapTo

@@ -12,16 +12,6 @@
         <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
 
-    <Target Name="CleanSourceGeneratedFiles" BeforeTargets="BeforeBuild" DependsOnTargets="$(BeforeBuildDependsOn)">
-        <RemoveDir Directories="Generated"/>
-        <RemoveDir Directories="Temp"/>
-    </Target>
-
-    <ItemGroup>
-        <Compile Remove="Generated\**"/>
-        <Content Include="Generated\**"/>
-    </ItemGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\Generator\Generator.csproj"
                           OutputItemType="Analyzer"

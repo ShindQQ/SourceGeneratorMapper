@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Generator.GenerationModels;
+using Generator.MapperModels;
 
 namespace Generator.Extensions;
 

@@ -4,6 +4,7 @@ namespace SourceGeneratorMapper;
 
 [MapTo(typeof(Class1))]
 [MapTo(typeof(Class3))]
+[OutputDirectory(@"Generated")]
 public sealed record Class2
 {
     public long Id { get; init; }

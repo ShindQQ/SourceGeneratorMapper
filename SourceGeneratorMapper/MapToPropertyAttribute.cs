@@ -8,5 +8,5 @@ public sealed class MapToPropertyAttribute : Attribute
         SourcePropertyNames = sourcePropertyNames;
     }
 
-    public string[] SourcePropertyNames { get; }
+    public string[] SourcePropertyNames { get; init; }
 }

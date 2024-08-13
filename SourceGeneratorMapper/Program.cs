@@ -1,11 +1,14 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+//
+// using Generated;
+// using SourceGeneratorMapper.Test;
 
 Console.WriteLine("Hello, World!1");
 
-int? x = 1;
-var y = x.ToString();
-int? y1 = int.TryParse(y, out var res) ? res : default;
+// int? x = 1;
+// var y = x.ToString();
+// int? y1 = int.TryParse(y, out var res) ? res : default;
 
 //
 // var x = new Class1 { Id = 1, Name = "A" };

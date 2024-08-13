@@ -6,6 +6,8 @@ public sealed record LookupClass
 
     public string Namespace { get; set; } = string.Empty;
 
+    public string OutputDirectory { get; set; } = string.Empty;
+
     public List<PropertyInfo> Properties { get; set; } = [];
 
     public List<string> MapTo { get; set; } = [];

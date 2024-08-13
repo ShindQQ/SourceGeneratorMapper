@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Generator.Extensions;
+using Generator.MapperModels;
 using Microsoft.CodeAnalysis;
 
 namespace Generator;
@@ -19,7 +20,11 @@ public class Generator : ISourceGenerator
         var setupMappers = SetupMappers(syntaxReceiver!);
 
         foreach (var setupMapper in setupMappers)
-            context.AddSource($"{setupMapper.ClassName}.g.cs", setupMapper.MapperBody.ToString());
+#pragma warning disable RS1035
+            File.WriteAllText($@"{setupMapper.OutputDirectory}\{setupMapper.ClassName}.cs",
+                setupMapper.MapperBody.ToString(),
+                Encoding.UTF8);
+#pragma warning restore RS1035
     }
 
     private static List<MapperCreationResult> SetupMappers(SyntaxReceiver syntaxReceiver)
@@ -53,15 +58,14 @@ public class Generator : ISourceGenerator
             stringBuilder.AppendUsings(mapperInfo);
             stringBuilder.AppendNamespace();
 
-            var className = $"{mapperInfo.MapTo}MappingExtension";
-
-            stringBuilder.AppendClassName(className);
+            stringBuilder.AppendClassName(mapperInfo.GeneratedClassName);
 
             stringBuilder.AppendMapperBody(mapperInfo);
 
             result.Add(new MapperCreationResult
             {
-                ClassName = className,
+                ClassName = mapperInfo.GeneratedClassName,
+                OutputDirectory = mapperInfo.MapToLookUpClass.OutputDirectory,
                 MapperBody = stringBuilder
             });
         }

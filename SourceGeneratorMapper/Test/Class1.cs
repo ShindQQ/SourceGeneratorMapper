@@ -2,6 +2,7 @@
 
 [MapTo(typeof(Class2))]
 [MapTo(typeof(Class3))]
+[OutputDirectory(@"Generated")]
 public sealed record Class1
 {
     public long Id { get; init; }

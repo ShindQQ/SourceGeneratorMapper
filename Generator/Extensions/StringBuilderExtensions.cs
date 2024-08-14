@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using Generator.GenerationModels;
 using Generator.MapperModels;
 
@@ -54,8 +53,9 @@ public static class StringBuilderExtensions
     {
         var namespaces = mapperInfo.LookupClasses
             .Select(x => x.Namespace)
-            .Distinct()
+            .Concat(mapperInfo.LookupClasses.Select(x => x.GetNamespaceFromDirectory()))
             .Concat(new[] { mapperInfo.MapToLookUpClass.Namespace })
+            .Distinct()
             .ToList();
 
         foreach (var @namespace in namespaces)

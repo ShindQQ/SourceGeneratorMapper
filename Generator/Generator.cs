@@ -35,14 +35,16 @@ public class Generator : ISourceGenerator
 
     private static List<MapperCreationResult> SetupMappers(SyntaxReceiver syntaxReceiver)
     {
-        var mapperInfos = syntaxReceiver.ClassMappings
+        var mapperInfos = GetMapperInfos(syntaxReceiver);
+
+        return mapperInfos.Select(SetupCreationResult).ToList();
+    }
+
+    private static List<MapperInfo> GetMapperInfos(SyntaxReceiver syntaxReceiver)
+    {
+        return syntaxReceiver.ClassMappings
             .SelectMany(lookupClass => lookupClass.MapTo,
-                (lookupClass, mapTo) =>
-                    new
-                    {
-                        LookupClass = lookupClass,
-                        MapTo = mapTo
-                    })
+                (lookupClass, mapTo) => new { LookupClass = lookupClass, MapTo = mapTo })
             .GroupBy(x => x.MapTo)
             .Select(grouping => new MapperInfo
             {
@@ -54,28 +56,22 @@ public class Generator : ISourceGenerator
                     .ToList()
             })
             .ToList();
+    }
 
-        var result = new List<MapperCreationResult>();
+    private static MapperCreationResult SetupCreationResult(MapperInfo mapperInfo)
+    {
+        var stringBuilder = new StringBuilder();
 
-        foreach (var mapperInfo in mapperInfos)
+        stringBuilder.AppendUsings(mapperInfo);
+        stringBuilder.AppendNamespace(mapperInfo.MapToLookUpClass.OutputDirectory);
+        stringBuilder.AppendClassName(mapperInfo.GeneratedClassName);
+        stringBuilder.AppendMapperBody(mapperInfo);
+
+        return new MapperCreationResult
         {
-            var stringBuilder = new StringBuilder();
-
-            stringBuilder.AppendUsings(mapperInfo);
-            stringBuilder.AppendNamespace(mapperInfo.MapToLookUpClass.OutputDirectory);
-
-            stringBuilder.AppendClassName(mapperInfo.GeneratedClassName);
-
-            stringBuilder.AppendMapperBody(mapperInfo);
-
-            result.Add(new MapperCreationResult
-            {
-                ClassName = mapperInfo.GeneratedClassName,
-                OutputDirectory = mapperInfo.MapToLookUpClass.OutputDirectory,
-                MapperBody = stringBuilder
-            });
-        }
-
-        return result;
+            ClassName = mapperInfo.GeneratedClassName,
+            OutputDirectory = mapperInfo.MapToLookUpClass.OutputDirectory,
+            MapperBody = stringBuilder
+        };
     }
 }

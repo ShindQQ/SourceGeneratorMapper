@@ -1,6 +1,7 @@
 ﻿using SourceGeneratorMapper;
 using SourceGeneratorMapper.Test;
-using SourceGeneratorMapper;
+using Generated;
+using Generated.test;
 
 namespace Generated;
 

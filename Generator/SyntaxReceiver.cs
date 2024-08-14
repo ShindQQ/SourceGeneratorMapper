@@ -25,12 +25,31 @@ public class SyntaxReceiver : ISyntaxReceiver
 
     private void AddMappings(TypeDeclarationSyntax typeDeclarationSyntax)
     {
-        var hasMapAttribute = typeDeclarationSyntax.AttributeLists
+        if (!HasMapAttribute(typeDeclarationSyntax))
+            return;
+
+        var mapTo = GetMapToAttributes(typeDeclarationSyntax);
+        var properties = GetProperties(typeDeclarationSyntax);
+
+        ClassMappings.Add(new LookupClass
+        {
+            Name = typeDeclarationSyntax.Identifier.Text,
+            OutputDirectory = GetOutputDirectory(typeDeclarationSyntax),
+            Namespace = typeDeclarationSyntax.GetNamespace(),
+            Properties = properties,
+            MapTo = mapTo
+        });
+    }
+
+    private static bool HasMapAttribute(TypeDeclarationSyntax typeDeclarationSyntax)
+    {
+        return typeDeclarationSyntax.AttributeLists
             .Any(x => x.Attributes.Any(y => y.Name.ToString().Equals(MappingAttribute.MapTo)));
+    }
 
-        if (!hasMapAttribute) return;
-
-        var mapTo = typeDeclarationSyntax.AttributeLists
+    private static List<string> GetMapToAttributes(TypeDeclarationSyntax typeDeclarationSyntax)
+    {
+        return typeDeclarationSyntax.AttributeLists
             .SelectMany(x => x.Attributes)
             .Where(attributeSyntax => attributeSyntax.Name.ToString().Equals(MappingAttribute.MapTo))
             .Select(x => x.ArgumentList)
@@ -38,22 +57,16 @@ public class SyntaxReceiver : ISyntaxReceiver
             .Select(x => x!.Arguments)
             .Select(arg => arg.ToString().ExtractTypeName())
             .ToList();
+    }
 
-        var properties = typeDeclarationSyntax.Members
-            .Select(x => x as PropertyDeclarationSyntax)
-            .Where(x => x != null)
+    private static List<PropertyInfo> GetProperties(TypeDeclarationSyntax typeDeclarationSyntax)
+    {
+        return typeDeclarationSyntax.Members
+            .OfType<PropertyDeclarationSyntax>()
             .Select(x => new PropertyInfo
             {
-                Name = x!.Identifier.Text,
-                Associations = x.AttributeLists
-                    .SelectMany(attributeListSyntax => attributeListSyntax.Attributes)
-                    .Where(attributeSyntax => attributeSyntax.Name.ToString().Equals(MappingAttribute.MapToProperty))
-                    .SelectMany(attributeSyntax =>
-                        attributeSyntax.ArgumentList?.Arguments ?? Enumerable.Empty<AttributeArgumentSyntax>())
-                    .Select(argument => argument.Expression)
-                    .OfType<LiteralExpressionSyntax>()
-                    .Select(literalExpression => literalExpression.Token.ValueText)
-                    .ToList(),
+                Name = x.Identifier.Text,
+                Associations = GetAssociations(x),
                 Type = x.Type.ToString(),
                 CollectionType = x.Type.GetCollectionType(),
                 CollectionItemType = x.Type.GetCollectionItemType(),
@@ -62,22 +75,31 @@ public class SyntaxReceiver : ISyntaxReceiver
                 IsReferenceType = x.Type.IsReferenceType()
             })
             .ToList();
-
-        ClassMappings.Add(new LookupClass
-        {
-            Name = typeDeclarationSyntax.Identifier.Text,
-            OutputDirectory = typeDeclarationSyntax
-                .AttributeLists
-                .SelectMany(x => x.Attributes)
-                .Where(y => y.Name.ToString().Equals(MappingAttribute.OutputDirectory))
-                .Select(x => x.ArgumentList)
-                .Where(x => x != null)
-                .Select(x => x!.Arguments)
-                .Select(arg => arg.ToString().ExtractDirectory())
-                .FirstOrDefault() ?? string.Empty,
-            Namespace = typeDeclarationSyntax.GetNamespace(),
-            Properties = properties,
-            MapTo = mapTo
-        });
     }
+
+    private static List<string> GetAssociations(PropertyDeclarationSyntax property)
+    {
+        return property.AttributeLists
+            .SelectMany(attributeListSyntax => attributeListSyntax.Attributes)
+            .Where(attributeSyntax => attributeSyntax.Name.ToString().Equals(MappingAttribute.MapToProperty))
+            .SelectMany(attributeSyntax =>
+                attributeSyntax.ArgumentList?.Arguments ?? Enumerable.Empty<AttributeArgumentSyntax>())
+            .Select(argument => argument.Expression)
+            .OfType<LiteralExpressionSyntax>()
+            .Select(literalExpression => literalExpression.Token.ValueText)
+            .ToList();
+    }
+
+    private static string GetOutputDirectory(TypeDeclarationSyntax typeDeclarationSyntax)
+    {
+        return typeDeclarationSyntax.AttributeLists
+            .SelectMany(x => x.Attributes)
+            .Where(y => y.Name.ToString().Equals(MappingAttribute.OutputDirectory))
+            .Select(x => x.ArgumentList)
+            .Where(x => x != null)
+            .Select(x => x!.Arguments)
+            .Select(arg => arg.ToString().ExtractDirectory())
+            .FirstOrDefault() ?? string.Empty;
+    }
+
 }

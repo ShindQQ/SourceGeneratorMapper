@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Generator.Extensions;
 
@@ -20,8 +21,16 @@ public static class TypeSyntaxExtensions
 
     public static bool IsReferenceType(this TypeSyntax type)
     {
-        var typeName = type.ToString();
-        return char.IsUpper(typeName[0]);
+        return type switch
+        {
+            PredefinedTypeSyntax predefinedTypeSyntax => predefinedTypeSyntax.Keyword.Kind() switch
+            {
+                SyntaxKind.StringKeyword or SyntaxKind.ObjectKeyword => true,
+                _ => false
+            },
+            ArrayTypeSyntax or NullableTypeSyntax or GenericNameSyntax => true,
+            _ => false
+        };
     }
 
     private static string GetBaseTypeName(this TypeSyntax type)
@@ -48,12 +57,12 @@ public static class TypeSyntaxExtensions
         if (type is NullableTypeSyntax nullableType)
             type = nullableType.ElementType;
 
-        if (type is ArrayTypeSyntax arrayType)
-            return arrayType.ElementType.ToString();
-
-        if (type is GenericNameSyntax { TypeArgumentList.Arguments.Count: 1 } genericName)
-            return genericName.TypeArgumentList.Arguments[0].ToString();
-
-        return string.Empty;
+        return type switch
+        {
+            ArrayTypeSyntax arrayType => arrayType.ElementType.ToString(),
+            GenericNameSyntax { TypeArgumentList.Arguments.Count: 1 } genericName => 
+                genericName.TypeArgumentList.Arguments.First().ToString(),
+            _ => string.Empty
+        };
     }
 }

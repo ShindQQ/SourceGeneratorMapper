@@ -101,5 +101,4 @@ public class SyntaxReceiver : ISyntaxReceiver
             .Select(arg => arg.ToString().ExtractDirectory())
             .FirstOrDefault() ?? string.Empty;
     }
-
 }

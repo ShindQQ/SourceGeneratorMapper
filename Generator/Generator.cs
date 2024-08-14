@@ -21,7 +21,6 @@ public class Generator : ISourceGenerator
 
         foreach (var setupMapper in setupMappers)
         {
-
 #pragma warning disable RS1035
             Directory.CreateDirectory(setupMapper.OutputDirectory);
             var file = new FileInfo(setupMapper.OutputDirectory);

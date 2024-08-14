@@ -60,7 +60,7 @@ public static class TypeSyntaxExtensions
         return type switch
         {
             ArrayTypeSyntax arrayType => arrayType.ElementType.ToString(),
-            GenericNameSyntax { TypeArgumentList.Arguments.Count: 1 } genericName => 
+            GenericNameSyntax { TypeArgumentList.Arguments.Count: 1 } genericName =>
                 genericName.TypeArgumentList.Arguments.First().ToString(),
             _ => string.Empty
         };

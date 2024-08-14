@@ -65,7 +65,7 @@ public static class StringBuilderExtensions
     public static void AppendNamespace(this StringBuilder stringBuilder, string outputDirectory)
     {
         stringBuilder.AppendLine();
-        
+
         if (string.IsNullOrEmpty(outputDirectory))
         {
             stringBuilder.AppendLine("namespace Generated;");
@@ -75,7 +75,7 @@ public static class StringBuilderExtensions
             var @namespace = string.Join(".", outputDirectory.Split('\\').AsEnumerable());
             stringBuilder.AppendLine($"namespace {@namespace};");
         }
-        
+
         stringBuilder.AppendLine();
     }
 
